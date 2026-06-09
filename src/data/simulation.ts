@@ -92,8 +92,16 @@ export type SimulationFormData = Record<
   string
 >;
 
+export interface SimulationConversationEntry {
+  id: string;
+  question: string;
+  answer: string;
+  createdAt: string;
+}
+
 export type SimulationRecord = SimulationFormData & {
   id: string;
   createdAt: string;
   insight?: InsightData;
+  conversationHistory?: SimulationConversationEntry[];
 };

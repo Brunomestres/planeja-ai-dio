@@ -59,7 +59,12 @@ src/
   services/
   styles/
   utils/
+docs/
 ```
+
+## Guias de Estudo
+
+- [Como construir o chat de perguntas da simulacao](docs/chat-simulation-guide.md)
 
 ## Organização por Responsabilidade
 

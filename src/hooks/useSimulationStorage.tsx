@@ -10,6 +10,7 @@ function normalizeSimulationRecord(
   return {
     ...record,
     createdAt: record.createdAt ?? new Date().toISOString(),
+    conversationHistory: record.conversationHistory ?? [],
   } as SimulationRecord;
 }
 

@@ -33,17 +33,17 @@ function OrderedList({ items }: { items: string[] }) {
 
 const statusStyles = {
   viable: {
-    label: "Meta viável no prazo",
+    label: "Meta viavel no prazo",
     className:
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   },
   needs_adjustment: {
-    label: "Ajuste necessário",
+    label: "Ajuste necessario",
     className:
       "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
   },
   unfeasible: {
-    label: "Meta inviável no prazo",
+    label: "Meta inviavel no prazo",
     className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   },
 };
@@ -52,11 +52,11 @@ export function Content({ insight }: ContentProps) {
   const status = statusStyles[insight.feasibility.status] ?? null;
 
   return (
-    <div className="lg:scrollbar-thin lg:max-h-93 lg:overflow-y-auto lg:pr-2 lg:[scrollbar-color:var(--border)_transparent]">
+    <div>
       <section className="flex flex-col gap-2">
         <div className="flex flex-col items-start gap-2 sm:flex-row">
           <span className="text-foreground text-sm font-semibold">
-            🎯 Viabilidade da Meta
+            Viabilidade da Meta
           </span>
           {status && (
             <span
@@ -70,27 +70,27 @@ export function Content({ insight }: ContentProps) {
       </section>
 
       <section>
-        <SectionTitle>💰 Diagnóstico Financeiro</SectionTitle>
+        <SectionTitle>Diagnostico Financeiro</SectionTitle>
         <Paragraph>{insight.diagnosis.content}</Paragraph>
       </section>
 
       <section>
-        <SectionTitle>📋 Sugestões Práticas</SectionTitle>
+        <SectionTitle>Sugestoes Praticas</SectionTitle>
         <OrderedList items={insight.suggestions.items} />
       </section>
 
       <section>
-        <SectionTitle>💡 Como Aumentar sua Renda</SectionTitle>
+        <SectionTitle>Como Aumentar sua Renda</SectionTitle>
         <OrderedList items={insight.extraIncome.items} />
       </section>
 
       <section>
-        <SectionTitle>🏦 Sugestões de Investimento</SectionTitle>
+        <SectionTitle>Sugestoes de Investimento</SectionTitle>
         <OrderedList items={insight.investment.items} />
       </section>
 
       <section>
-        <SectionTitle>🚀 Mensagem Final</SectionTitle>
+        <SectionTitle>Mensagem Final</SectionTitle>
         <Paragraph>{insight.motivation.content}</Paragraph>
       </section>
     </div>

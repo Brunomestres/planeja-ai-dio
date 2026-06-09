@@ -1,8 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { buildAIPrompt, buildSimulationQuestionPrompt } from "../data/aiPrompt";
+import type {
+  SimulationConversationEntry,
+  SimulationRecord,
+} from "../data/simulation";
 import { useSimulationStorage } from "./useSimulationStorage";
-import { getInsight, type InsightData } from "../services/aiService";
-import { buildAIPrompt } from "../data/aiPrompt";
-import type { SimulationRecord } from "../data/simulation";
+import {
+  getInsight,
+  getQuestionAnswer,
+  type InsightData,
+} from "../services/aiService";
+
+interface PendingQuestion {
+  id: string;
+  question: string;
+}
 
 export const useInsight = (id: string) => {
   const isRequestPending = useRef(false);
@@ -18,11 +30,21 @@ export const useInsight = (id: string) => {
     return null;
   });
 
+  const [conversationHistory, setConversationHistory] = useState<
+    SimulationConversationEntry[]
+  >(() => {
+    const simulation = getFormData(id);
+    return simulation?.conversationHistory ?? [];
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingQuestion, setPendingQuestion] = useState<PendingQuestion | null>(
+    null,
+  );
+  const [isQuestionLoading, setIsQuestionLoading] = useState(false);
+  const [questionError, setQuestionError] = useState<string | null>(null);
 
-  // Necessário o uso do useCallback pois temos que colocar essa função
-  // Como array de dependências do useEffect
   const fetchInsight = useCallback(
     async (simulationId: string) => {
       const simulation = getFormData(simulationId);
@@ -56,7 +78,6 @@ export const useInsight = (id: string) => {
   );
 
   useEffect(() => {
-    // Evita loop infinito de requisições para a API do Gemini
     if (insight || isLoading || error || isRequestPending.current) {
       return;
     }
@@ -64,5 +85,64 @@ export const useInsight = (id: string) => {
     fetchInsight(id);
   }, [id, insight, isLoading, error, fetchInsight]);
 
-  return { insight, isLoading, error, fetchInsight };
+  const askQuestion = useCallback(
+    async (question: string) => {
+      const simulation = getFormData(id);
+
+      if (!simulation) {
+        setQuestionError("Simulação não encontrada.");
+        return;
+      }
+
+      const pendingQuestionId = crypto.randomUUID();
+
+      setIsQuestionLoading(true);
+      setQuestionError(null);
+      setPendingQuestion({
+        id: pendingQuestionId,
+        question,
+      });
+
+      try {
+        const currentHistory = simulation.conversationHistory ?? [];
+        const prompt = buildSimulationQuestionPrompt(
+          simulation,
+          question,
+          currentHistory,
+        );
+        const answer = await getQuestionAnswer(prompt);
+        const newEntry: SimulationConversationEntry = {
+          id: pendingQuestionId,
+          question,
+          answer,
+          createdAt: new Date().toISOString(),
+        };
+        const nextConversationHistory = [...currentHistory, newEntry];
+
+        setConversationHistory(nextConversationHistory);
+        updateSimulation(id, {
+          ...simulation,
+          conversationHistory: nextConversationHistory,
+        } as SimulationRecord);
+      } catch {
+        setQuestionError("Erro ao responder sua pergunta. Tente novamente.");
+      } finally {
+        setPendingQuestion(null);
+        setIsQuestionLoading(false);
+      }
+    },
+    [getFormData, id, updateSimulation],
+  );
+
+  return {
+    insight,
+    conversationHistory,
+    isLoading,
+    error,
+    fetchInsight,
+    pendingQuestion,
+    isQuestionLoading,
+    questionError,
+    askQuestion,
+  };
 };
